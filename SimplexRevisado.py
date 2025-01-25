@@ -1,7 +1,13 @@
 import numpy as np
-Quan_R = 3 ## quantidade de linhas de restrições
-QuantV = 2  ##quantidade de variaveis
+global Quan_R ## quantidade de linhas de restrições
+global QuantV  ##quantidade de variaveis
 
+Quan_R = 0
+QuantV = 0
+
+#Quan_R = 3
+#QuantV = 2
+ ##haro heheheheh
 f = open("solucaounica.txt", "r")
 cr = []
 b = []
@@ -50,30 +56,34 @@ def VarExcFol(line, linha_c):
             Matriz = np.array(A_new)
 
 def LerArquivo():
+    global Quan_R, QuantV
     lines = f.readlines()
     Restricoes = []
-    for i in lines:
+    for i in lines:  ##i = linhas do arquivo
         i = i.strip()
         if(i): # se for diferente de vazio
             if("M" in i):
                 Fo = i
             else:
-                QuantR += 1
+                QuantV = min(len(i.split('<')[0].split()), len(i.split('>')[0].split()))
+                Quan_R += 1
                 Restricoes.append(i)
-    return Restricoes
+    Quan_R += 1
+    return (Restricoes, Fo)
 
-#LerArquivo()
+def ProcurarColuna(cols):
+    return Matriz[:,cols]
 
-Fo = f.readline().strip()
-r1 = f.readline().strip()  ##pq eu não pesqisei antesaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-r2 = f.readline().strip() ##.strip() == remove espaços em branco e otras cositas se especificar
+Restricoes, Fo = LerArquivo()
 
-a_lin1 = BuscaInt(r1)
-a_lin2 = BuscaInt(r2)
+Aux_restricoes = []
+for i in Restricoes:
+    Aux_restricoes.append(BuscaInt(i))
+
 aux_Fo = BuscaInt(Fo)
 
 Matriz = np.array([aux_Fo])
-Matriz = np.array([a_lin1, a_lin2])
+Matriz = np.array(Aux_restricoes)
 
 b = np.delete(Matriz, (QuantV-1, QuantV -2), axis = 1)
 Matriz = np.delete(Matriz, 2, axis = 1)
@@ -84,12 +94,11 @@ Matriz = np.insert(Matriz, 0, aux_Fo, axis = 0)
 Fo = MaxOrMin(Fo)
 Matriz = np.delete(Matriz, 0, axis = 0)
 Matriz = np.insert(Matriz, 0, Fo, axis = 0)
-VarExcFol(r1, 1)
-VarExcFol(r2, 2)
+for i in range(len(Restricoes)):
+    VarExcFol(Restricoes[i], i + 1) 
 
-C = np.delete(Matriz, (Quan_R-1, Quan_R -2), axis = 0) #de novo pq atualizou a matriz possivelmente
-Matriz = np.delete(Matriz, 0, axis = 0)
-Quan_R-= 1
+C = np.delete(Matriz, (Quan_R-1, Quan_R -2), axis = 0) #de novo pq atualizou a matriz possivelmenete
+
 print("Matriz b: \n", b)
 print("Matriz C: \n", C)
 print("Matriz completa: \n", Matriz)
@@ -98,35 +107,15 @@ cr = C[np.where(C != 0)]
 cb = C[np.where(C == 0)]
 
 cols = np.where(C != 0 )[1]
-
-test = []
-def ProcurarColuna(cols):
-    for j in cols:
-        for i in range(Quan_R):
-            if(len(test) < Quan_R):
-                test.append([Matriz[i][j]])
-            else:
-                test[i].append(Matriz[i][j])
-    return test
+colsb = np.where(C == 0 )[1]
 
 R = np.delete(ProcurarColuna(cols), 0, axis= 0)
-print(R)
+B = np.delete(ProcurarColuna(colsb), 0, axis = 0)
 
 def EntrarBase():
     Indice = np.argmin(cr)
     if(cr[Indice] < 0):
-        ColEntrada = Matriz[:][Indice]
+        ColEntrada = ProcurarColuna(Indice)
         print("Col entrada\n", ColEntrada)
-        #ColEntrada = np.delete(ColEntrada, 0, axis = 0)
-        print("Col entrada\n", ColEntrada)
-        #Menor = np.argmin( np.divide(b, ColEntrada))
-        #print(Menor)
-        pass
 
 EntrarBase()
-
-Indice = np.argmin(cr)
-#retorna indice do elemento [-80] Saida indice = 1
-#pesquisar na matriz (Matriz) a coluna com indice  ==1
-##colocar essa coluna em outro vetor
-##primeira 
