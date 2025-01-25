@@ -87,8 +87,9 @@ Matriz = np.insert(Matriz, 0, Fo, axis = 0)
 VarExcFol(r1, 1)
 VarExcFol(r2, 2)
 
-C = np.delete(Matriz, (Quan_R-1, Quan_R -2), axis = 0) #de novo pq atualizou a matriz possivelmenete
-
+C = np.delete(Matriz, (Quan_R-1, Quan_R -2), axis = 0) #de novo pq atualizou a matriz possivelmente
+Matriz = np.delete(Matriz, 0, axis = 0)
+Quan_R-= 1
 print("Matriz b: \n", b)
 print("Matriz C: \n", C)
 print("Matriz completa: \n", Matriz)
@@ -113,7 +114,6 @@ print(R)
 
 def EntrarBase():
     Indice = np.argmin(cr)
-    print(ProcurarColuna([Indice]))
     if(cr[Indice] < 0):
         ColEntrada = Matriz[:][Indice]
         print("Col entrada\n", ColEntrada)
@@ -125,3 +125,8 @@ def EntrarBase():
 
 EntrarBase()
 
+Indice = np.argmin(cr)
+#retorna indice do elemento [-80] Saida indice = 1
+#pesquisar na matriz (Matriz) a coluna com indice  ==1
+##colocar essa coluna em outro vetor
+##primeira 
