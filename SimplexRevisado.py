@@ -131,7 +131,7 @@ def EntrarBase():
             trocar_colunas(Indice, col_troca[0], C)
             return Matriz
     else:
-        print("Solução Ótima")
+        print("Solução Ótima\n")
 
 def CalcCr():
     cr = cr - cb * np.linalg.inv(B) * R
