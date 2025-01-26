@@ -19,6 +19,7 @@ num = ""
 C = [] #armazena função objetivo total
 Matriz = []
 R = []
+B = []
 
 def BuscaInt(a_lin):
     integers = [int(num) for num in a_lin.split() if num.lstrip('-').isdigit()]  ##split == divide strings em caracteres
@@ -37,6 +38,7 @@ def MaxOrMin(line):
             elif(alpha == "Min"):
                 pass
 
+#problema ao adicionar variaveis de folga/excesso resolvido
 def VarExcFol(line, linha_c):
     global A, C
     global Matriz, QuantV
@@ -74,10 +76,13 @@ def LerArquivo():
                 Restricoes.append(i)
     return (Restricoes, Fo)
 
-def ProcurarColuna(cols, matriz = []):
-    if(len(matriz) > 0):
-        return matriz[:, cols]
-    return Matriz[:, cols]
+def ProcurarColuna(cols, matriz = None):
+    if matriz is None: ##se não é especificado matriz, retorna as colunas da Matriz principal
+        return Matriz[:, cols]
+    elif(matriz.ndim == 1):  ##verifica se é apenas um vetor
+        matriz = np.array(matriz)
+        print("matriz nova", matriz.ndim)
+        return matriz[cols]
 
 Restricoes, Fo = LerArquivo()
 
@@ -97,34 +102,52 @@ C = MaxOrMin(Fo)
 for i in range(len(Restricoes)):
     VarExcFol(Restricoes[i], i ) 
 
-print("Matriz b: \n", b)
-print("Matriz C: \n", C)
 print("Matriz completa: \n", Matriz)
 
-cr = np.where(C != 0)[0] ## esse guard indice
-cb = np.where(C == 0 )[0] 
+def ReinicializarMatrizes():
+    cr = np.where(C != 0)[0] ## esse guard indice
+    cb = np.where(C == 0 )[0] 
+    R = ProcurarColuna(cr)
+    B = ProcurarColuna(cb)
 
-R = ProcurarColuna(cr)
-B = ProcurarColuna(cb)
-
-def trocar_colunas(Matriz, col1, col2):
-    Matriz[:, [col1, col2]] = Matriz[:, [col2, col1]]
+def trocar_colunas(col1, col2, matriz = None):
+    if(matriz is None):
+        Matriz[:, [col1, col2]] = Matriz[:, [col2, col1]]
+    elif(matriz.ndim == 1):  ##verifica se é apenas um vetor
+        matriz[ :, [col1, col2] ] = matriz[ :, [col2, col1] ]
 
 def EntrarBase():
-    Indice = np.argmin(ProcurarColuna(cr, C))
-    if(C[0][Indice] < 0):
-        ColEntrada = np.delete(ProcurarColuna(Indice), 0, axis = 0) #apagar aqui
+    Indice = ProcurarColuna(cr, C)
+    Indice = np.argmin(Indice)
+    if(C[Indice] < 0):
+        ColEntrada = Matriz[:, Indice]
         ColEntrada = ColEntrada.reshape(-1, 1)
         LinSaida = np.argmin(np.divide(b, ColEntrada))
         print("Linsaida\n", LinSaida )
-        return ColEntrada, LinSaida
+        col_troca = np.where(Matriz[LinSaida, :] == 1)[0]  ##pq só funciona com [0] mesmo que ainda retorne um vetor?
+        teste = ProcurarColuna(col_troca, C)
+        if(teste == 0):
+            trocar_colunas(Indice, col_troca[0])
+            trocar_colunas(Indice, col_troca[0], C)
+            return Matriz
     else:
         print("Solução Ótima")
-        sys.exit()
+
+def CalcCr():
+    cr = cr - cb * np.linalg.inv(B) * R
+    return cr
+
+def CalcR():
+    R = np.linalg.inv(B) * R
+    return R
+
+def CalcFo():
+    FO = cb * np.linalg.inv(B) * b
+    return FO
 
 EntrarBase()
 #Testar se é ótima ✅
-#Calcular Cr ✅
+#Calcular Cr =  cR − cB ⋅ B−1 ⋅ R✅
 #Trocar Colunas que entram e saem ✅
 #recalcular variáveis básicas b = B^-1 * b
 #recalcular R = B−1 ⋅ R
