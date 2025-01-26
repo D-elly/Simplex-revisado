@@ -27,7 +27,6 @@ def BuscaInt(a_lin):
 def MaxOrMin(line):
     global Matriz
     global C
-    C = np.delete(Matriz, (Quan_R-1, Quan_R -2), axis = 0)
     alpha = ""
     for j in line:
         if(j.isalpha()):
@@ -40,7 +39,6 @@ def MaxOrMin(line):
 
 def VarExcFol(line, linha_c):
     global A, C
-    alpha = ""
     global Matriz, QuantV
     for j in line:
         if(j == "<"):
@@ -87,17 +85,15 @@ Aux_restricoes = []
 for i in Restricoes:
     Aux_restricoes.append(BuscaInt(i))
 
-aux_Fo = BuscaInt(Fo)
-
-C = np.array([aux_Fo])
 Matriz = np.array(Aux_restricoes)
 
 b = np.delete(Matriz, (QuantV-1, QuantV -2), axis = 1)
 Matriz = np.delete(Matriz, 2, axis = 1)
 
 ######Colocando na forma padrão
+C = np.array(BuscaInt(Fo))
+C = MaxOrMin(Fo)
 
-Fo = MaxOrMin(Fo)
 for i in range(len(Restricoes)):
     VarExcFol(Restricoes[i], i ) 
 
@@ -105,12 +101,14 @@ print("Matriz b: \n", b)
 print("Matriz C: \n", C)
 print("Matriz completa: \n", Matriz)
 
-cr = np.where(C != 0 )[1] ## esse guard indice
-cb = np.where(C == 0 )[1] #meu bem está em dúvida no que irá fazer agora? Minha aula começou
-#irei deixar aberto pra vc mexer
+cr = np.where(C != 0)[0] ## esse guard indice
+cb = np.where(C == 0 )[0] 
 
-R = np.delete(ProcurarColuna(cr), 0, axis= 0)
-B = np.delete(ProcurarColuna(cb), 0, axis = 0)
+R = ProcurarColuna(cr)
+B = ProcurarColuna(cb)
+
+def trocar_colunas(Matriz, col1, col2):
+    Matriz[:, [col1, col2]] = Matriz[:, [col2, col1]]
 
 def EntrarBase():
     Indice = np.argmin(ProcurarColuna(cr, C))
@@ -118,11 +116,13 @@ def EntrarBase():
         ColEntrada = np.delete(ProcurarColuna(Indice), 0, axis = 0) #apagar aqui
         ColEntrada = ColEntrada.reshape(-1, 1)
         LinSaida = np.argmin(np.divide(b, ColEntrada))
+        print("Linsaida\n", LinSaida )
         return ColEntrada, LinSaida
     else:
         print("Solução Ótima")
         sys.exit()
-print(EntrarBase())
+
+EntrarBase()
 #Testar se é ótima ✅
 #Calcular Cr ✅
 #Trocar Colunas que entram e saem ✅
