@@ -81,7 +81,6 @@ def ProcurarColuna(cols, matriz = None):
         return Matriz[:, cols]
     elif(matriz.ndim == 1):  ##verifica se é apenas um vetor
         matriz = np.array(matriz)
-        print("matriz nova", matriz.ndim)
         return matriz[cols]
 
 Restricoes, Fo = LerArquivo()
@@ -104,17 +103,16 @@ for i in range(len(Restricoes)):
 
 print("Matriz completa: \n", Matriz)
 
-def ReinicializarMatrizes():
-    cr = np.where(C != 0)[0] ## esse guard indice
-    cb = np.where(C == 0 )[0] 
-    R = ProcurarColuna(cr)
-    B = ProcurarColuna(cb)
+cr = np.where(C != 0)[0] ## esse guard indice
+cb = np.where(C == 0 )[0] 
+R = ProcurarColuna(cr)
+B = ProcurarColuna(cb)
 
 def trocar_colunas(col1, col2, matriz = None):
     if(matriz is None):
         Matriz[:, [col1, col2]] = Matriz[:, [col2, col1]]
     elif(matriz.ndim == 1):  ##verifica se é apenas um vetor
-        matriz[ :, [col1, col2] ] = matriz[ :, [col2, col1] ]
+        matriz[[col1, col2]] = matriz[[col2, col1]] 
 
 def EntrarBase():
     Indice = ProcurarColuna(cr, C)
@@ -123,12 +121,12 @@ def EntrarBase():
         ColEntrada = Matriz[:, Indice]
         ColEntrada = ColEntrada.reshape(-1, 1)
         LinSaida = np.argmin(np.divide(b, ColEntrada))
-        print("Linsaida\n", LinSaida )
         col_troca = np.where(Matriz[LinSaida, :] == 1)[0]  ##pq só funciona com [0] mesmo que ainda retorne um vetor?
         teste = ProcurarColuna(col_troca, C)
         if(teste == 0):
             trocar_colunas(Indice, col_troca[0])
             trocar_colunas(Indice, col_troca[0], C)
+            
             return Matriz
     else:
         print("Solução Ótima\n")
@@ -146,6 +144,14 @@ def CalcFo():
     return FO
 
 EntrarBase()
+print("Matriz completa: \n", Matriz)
+print("C completo: \n", C)
+print("Cr novo: \n", cr)
+print("Cb novo: \n", cb)
+print("R novo: \n", R)
+print("B novo: \n", B)
+print("b novo: \n", b)
+
 #Testar se é ótima ✅
 #Calcular Cr =  cR − cB ⋅ B−1 ⋅ R✅
 #Trocar Colunas que entram e saem ✅
