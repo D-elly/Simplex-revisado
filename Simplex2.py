@@ -1,12 +1,9 @@
 import numpy as np
-import sys
 global Quan_R ## quantidade de linhas de restrições
 global QuantV  ##quantidade de variaveis
-global C
 
 Quan_R = 0
 QuantV = 0
-Vartificiais = []#guardar variaveis artificial
 
 #Quan_R = 3
 #QuantV = 2
@@ -39,7 +36,7 @@ def MaxOrMin(line):
                 pass
 
 def VarExcFol(line, linha_c):
-    global A, C
+    global A
     alpha = ""
     global Matriz, QuantV
     for j in line:
@@ -49,7 +46,6 @@ def VarExcFol(line, linha_c):
             new_M[linha_c][QuantV] = 1
             QuantV +=1
             Matriz = np.array(new_M) 
-            C = np.append(C, [0])
         elif(j == ">"):
             new_cols = np.zeros((QuantV, Quan_R))
             A_new = np.insert(Matriz, QuantV, new_cols, axis = 1)
@@ -58,8 +54,6 @@ def VarExcFol(line, linha_c):
             A_new[linha_c][QuantV] = 1
             A_new[0][QuantV] = 1
             Matriz = np.array(A_new)
-            C = np.append(C, [0])
-            C = np.append(C, [1])
 
 def LerArquivo():
     global Quan_R, QuantV
@@ -74,12 +68,11 @@ def LerArquivo():
                 QuantV = min(len(i.split('<')[0].split()), len(i.split('>')[0].split()))
                 Quan_R += 1
                 Restricoes.append(i)
+    Quan_R += 1
     return (Restricoes, Fo)
 
-def ProcurarColuna(cols, matriz = []):
-    if(len(matriz) > 0):
-        return matriz[:, cols]
-    return Matriz[:, cols]
+def ProcurarColuna(cols):
+    return Matriz[:,cols]
 
 Restricoes, Fo = LerArquivo()
 
@@ -89,43 +82,40 @@ for i in Restricoes:
 
 aux_Fo = BuscaInt(Fo)
 
-C = np.array([aux_Fo])
+Matriz = np.array([aux_Fo])
 Matriz = np.array(Aux_restricoes)
 
 b = np.delete(Matriz, (QuantV-1, QuantV -2), axis = 1)
 Matriz = np.delete(Matriz, 2, axis = 1)
+Matriz = np.insert(Matriz, 0, aux_Fo, axis = 0)
 
 ######Colocando na forma padrão
 
 Fo = MaxOrMin(Fo)
+Matriz = np.delete(Matriz, 0, axis = 0)
+Matriz = np.insert(Matriz, 0, Fo, axis = 0)
 for i in range(len(Restricoes)):
-    VarExcFol(Restricoes[i], i ) 
+    VarExcFol(Restricoes[i], i + 1) 
+
+C = np.delete(Matriz, (Quan_R-1, Quan_R -2), axis = 0) #de novo pq atualizou a matriz possivelmenete
 
 print("Matriz b: \n", b)
 print("Matriz C: \n", C)
 print("Matriz completa: \n", Matriz)
 
-cr = np.where(C != 0 )[1] ## esse guard indice
-cb = np.where(C == 0 )[1] #meu bem está em dúvida no que irá fazer agora? Minha aula começou
-#irei deixar aberto pra vc mexer
+cr = C[np.where(C != 0)]
+cb = C[np.where(C == 0)]
 
-R = np.delete(ProcurarColuna(cr), 0, axis= 0)
-B = np.delete(ProcurarColuna(cb), 0, axis = 0)
+cols = np.where(C != 0 )[1]
+colsb = np.where(C == 0 )[1]
+
+R = np.delete(ProcurarColuna(cols), 0, axis= 0)
+B = np.delete(ProcurarColuna(colsb), 0, axis = 0)
 
 def EntrarBase():
-    Indice = np.argmin(ProcurarColuna(cr, C))
-    if(C[0][Indice] < 0):
-        ColEntrada = np.delete(ProcurarColuna(Indice), 0, axis = 0) #apagar aqui
-        ColEntrada = ColEntrada.reshape(-1, 1)
-        LinSaida = np.argmin(np.divide(b, ColEntrada))
-        return ColEntrada, LinSaida
-    else:
-        print("Solução Ótima")
-        sys.exit()
-print(EntrarBase())
-#Testar se é ótima ✅
-#Calcular Cr ✅
-#Trocar Colunas que entram e saem ✅
-#recalcular variáveis básicas b = B^-1 * b
-#recalcular R = B−1 ⋅ R
-#FO = cB ⋅ B−1 ⋅ b
+    Indice = np.argmin(cr)
+    if(cr[Indice] < 0):
+        ColEntrada = ProcurarColuna(Indice)
+        print("Col entrada\n", ColEntrada)
+
+EntrarBase()
