@@ -41,7 +41,7 @@ def MaxOrMin(line):
 #problema ao adicionar variaveis de folga/excesso resolvido
 def VarExcFol(line, linha_c):
     global A, C
-    global Matriz, QuantV
+    global Matriz, QuantV, Vartificiais
     for j in line:
         if(j == "<"):
             newcol = np.zeros(Quan_R)
@@ -50,6 +50,8 @@ def VarExcFol(line, linha_c):
             QuantV +=1
             Matriz = np.array(new_M) 
             C = np.append(C, [0])
+            C = np.append(C, [1])
+            break
         elif(j == ">"):
             new_cols = np.zeros((QuantV, Quan_R))
             A_new = np.insert(Matriz, QuantV, new_cols, axis = 1)
@@ -60,14 +62,18 @@ def VarExcFol(line, linha_c):
             Vartificiais += 1
             Matriz = np.array(A_new)
             C = np.append(C, [0])
+            break
         elif( j == '='):
             newcol = np.zeros(Quan_R)
             new_M = np.insert(Matriz, QuantV, newcol, axis = 1)
             new_M[linha_c][QuantV] = 1
             QuantV +=1
             Vartificiais += 1
-            Matriz = np.array(new_M) 
-    C = np.append(C, [1])
+            Matriz = np.array(new_M)
+            C = np.append(C, [0])
+            C = np.append(C, [1]) 
+            break
+            
 
 def LerArquivo():
     global Quan_R, QuantV
@@ -99,8 +105,8 @@ for i in Restricoes:
 
 Matriz = np.array(Aux_restricoes)
 
-b = np.delete(Matriz, (QuantV-1, QuantV -2), axis = 1)
-Matriz = np.delete(Matriz, 2, axis = 1)
+b = np.insert(Matriz, 0, QuantV, axis = 1)
+Matriz = np.delete(Matriz, QuantV, axis = 1)
 
 ######Colocando na forma padrão
 C = np.array(BuscaInt(Fo))
