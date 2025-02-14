@@ -8,9 +8,7 @@ Quan_R = 0
 QuantV = 0
 Vartificiais = 0 #guardar variaveis artificial
 global Indice, col_troca
-#Quan_R = 3
-#QuantV = 2
- ##haro heheheheh
+
 f = open("solucaounica.txt", "r")
 cr = []
 b = []
@@ -36,9 +34,9 @@ def MaxOrMin(line):
                 C = C * -1
                 return C
             elif(alpha == "Min"):
-                pass
+                return C
 
-#problema ao adicionar variaveis de folga/excesso resolvido
+#Adicionar variáveis artificiais no final da matriz
 def VarExcFol(line, linha_c):
     global A, C
     global Matriz, QuantV, Vartificiais
@@ -49,15 +47,14 @@ def VarExcFol(line, linha_c):
             new_M[linha_c][QuantV] = 1
             QuantV +=1
             Matriz = np.array(new_M) 
-            C = np.append(C, [0])
-            C = np.append(C, [1])
+            C = np.append(C, [0]) #adiciona '0' na coluna do vetor
             break
         elif(j == ">"):
-            new_cols = np.zeros((QuantV, Quan_R))
+            new_cols = np.zeros(Quan_R)
             A_new = np.insert(Matriz, QuantV, new_cols, axis = 1)
             A_new[linha_c][QuantV] = -1
             QuantV += 1
-            A_new[linha_c][QuantV] = 1
+            lin_e = np.append(lin_e, [linha_c])
             QuantV += 1
             Vartificiais += 1
             Matriz = np.array(A_new)
@@ -66,15 +63,17 @@ def VarExcFol(line, linha_c):
         elif( j == '='):
             newcol = np.zeros(Quan_R)
             new_M = np.insert(Matriz, QuantV, newcol, axis = 1)
-            new_M[linha_c][QuantV] = 1
+            lin_e = np.append(lin_e, [linha_c])
             QuantV +=1
             Vartificiais += 1
             Matriz = np.array(new_M)
             C = np.append(C, [0])
-            C = np.append(C, [1]) 
             break
+    for i in Vartificiais:
+        A_new[linha_c][QuantV] = 1
+        Matriz = np.array(A_new)
+        C = np.append(C, [0])
             
-
 def LerArquivo():
     global Quan_R, QuantV
     lines = f.readlines()
@@ -105,7 +104,7 @@ for i in Restricoes:
 
 Matriz = np.array(Aux_restricoes)
 
-b = np.insert(Matriz, 0, QuantV, axis = 1)
+b = np.delete(Matriz, (0, QuantV-1), axis = 1)
 Matriz = np.delete(Matriz, QuantV, axis = 1)
 
 ######Colocando na forma padrão
@@ -117,8 +116,8 @@ for i in range(len(Restricoes)):
 
 print("Matriz completa: \n", Matriz)
 
-cr = np.where(C != 0)[0] ## esse guard indice
-cb = np.where(C == 0 )[0] 
+cr = np.where(C != 0)[0] ##  guarda indice de todos que possuem na base diferente de zero no vetor C
+cb = np.where(C == 0 )[0]  ## guarda indice de todos que possuem na base igual a zero no vetor C
 R = ProcurarColuna(cr)
 B = ProcurarColuna(cb)
 
@@ -136,14 +135,10 @@ def EntrarBase():
     if(C[Indice] < 0):
         ColEntrada = Matriz[:, Indice]
         ColEntrada = ColEntrada.reshape(-1, 1)
-        
         LinSaida = np.argmin(np.divide(b, ColEntrada))
-
         col_troca = np.where(Matriz[LinSaida, :] == 1)[0] #cb
-        
         teste = ProcurarColuna(col_troca, C)
         if(teste == 0):
-            
             cr[np.where(cr == Indice)[0][0]] = col_troca[0]
             cb[np.where(cb == col_troca[0])[0][0]] = Indice
             
